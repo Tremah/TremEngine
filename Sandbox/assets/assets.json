@@ -1,0 +1,31 @@
+{
+  "shaders": [
+    {
+      "name": "FlatColor",
+      "filepath": "assets/shaders/flatcolor.glsl"
+    },
+    {
+      "name": "Texture",
+      "filepath": "assets/shaders/texture.glsl"
+    }
+  ],
+
+  "textures": [
+    {
+      "name": "default",
+      "filepath": "assets/textures/white_color.png"
+    },
+    {
+      "name": "tr_logo",
+      "filepath": "assets/textures/tr_logo.png"
+    },
+    {
+      "name": "cowboy_large",
+      "filepath": "assets/textures/cowboy_large.png"
+    },
+    {
+      "name": "tr_logo_small",
+      "filepath": "assets/textures/tr_logo_small.png"
+    }
+  ]
+}
