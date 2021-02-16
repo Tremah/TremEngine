@@ -1,5 +1,7 @@
 # TremEngine
 
+![TremEngine logo](http://cydi.info/TR_logo_mid.png "TremEngine logo")
+
 Trem Engine is (will be) a 2D game engine.
 
 As of now, the engine exists in a preliminary alpha state and is capable of rendering quads with a texture and changing the transform of these quads (move, rotate, scale).
