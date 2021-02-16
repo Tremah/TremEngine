@@ -11,13 +11,9 @@
 #include <trem/renderer/texture.h>
 
 //ui
-#include <trem/ui/window.h>
-#include <trem/ui/input_codes.h>
+#include <trem/core/window.h>
+#include <trem/input/input_codes.h>
 
 //util
 #include <trem/util/util.h>
 #include <trem/util/timer.h>
-
-//data
-#include <trem/data/data.h>
-

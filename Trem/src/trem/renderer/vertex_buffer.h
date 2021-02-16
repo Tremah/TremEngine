@@ -26,9 +26,9 @@ namespace Trem
     //custom constructors
     VertexBuffer(uint32_t size);
 
-    //public member variables
+    //Member variables
 
-    //public member functions
+    //Member functions
     /**
       \brief Binds the vertex buffer for usage.
      */
@@ -40,12 +40,12 @@ namespace Trem
     static void unbind();
 
   protected:
-    //protected member variables
+    //Member variables
 
-    //protected member functions
+    //Member functions
 
   private:
-    //private member variables
+    //Member variables
     unsigned int vertexBufferID_; /**< unique opengl id*/
   };
 }

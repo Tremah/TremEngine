@@ -5,7 +5,7 @@ namespace Trem
 {
   IndexBuffer::IndexBuffer(const uint32_t size) : indexBufferId_{0}
   {
-    //create index buffer
+    //createBuffers index buffer
     glCreateBuffers(1, &indexBufferId_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferId_);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_STATIC_DRAW);

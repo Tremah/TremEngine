@@ -6,33 +6,102 @@
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 //game engine includes
-#include <trem/data/data.h>
 #include <trem/renderer/vertex_array.h>
 #include <trem/renderer/texture_manager.h>
 #include <trem/renderer/shader_library.h>
 
-/**
- *  \brief Implementation of a 2D renderer for OpenGL.
- */
 namespace Trem
 {
+  //---------------------------------------------------------
+  //--- Object data, definition of geometrical primitives ---
+  //---------------------------------------------------------
+    
+  /**
+   *  \brief Struct to hold information about a vertex of a quad.
+   */
+  struct QuadVertex
+  {
+    QuadVertex() : position_{}, color_{}, texCoordinates_{}, texUnit_{0.f} {}
+    QuadVertex(glm::vec4 position, glm::vec4 color, glm::vec2 textureCoordinates) : position_{position}, color_{color}, texCoordinates_{textureCoordinates}, texUnit_{0.f}  {}
+
+    glm::vec4 position_;
+    glm::vec4 color_;
+    glm::vec2 texCoordinates_;
+    float     texUnit_;
+  };
+
+  /**
+   *  \brief Struct to hold information about a quad.
+   */
+  struct Quad
+  {
+    Quad();
+    Quad(const glm::vec4& color, const glm::mat4& transform);
+    Quad(const glm::vec4& color, const glm::vec3& position, const glm::vec3& scale, const glm::mat4& transform);
+    Quad(const glm::vec4& color, ShaPtr<Texture> texture);
+    Quad(const glm::vec4& color, const glm::vec3& position, ShaPtr<Texture> texture);
+    Quad(const glm::vec4& color, const glm::vec3& position, const glm::vec3& scale, ShaPtr<Texture> texture);
+
+    void setPosition(const glm::vec3& position);
+    void setScale(const glm::vec3& scale);
+    void setRotation(float rotation);
+    void setColor(const glm::vec4& color);
+    void calculateTransform();
+    
+    std::array<QuadVertex, 4> vertices_;
+    glm::vec3 position_{0.f};
+    glm::vec3 scale_{1.f};
+    float     rotation_ = 0.f;
+    glm::mat4 transform_{1.f};
+
+    ShaPtr<Texture> texture_{nullptr};
+  };
+
+  /**
+   * \brief Struct to hold the different parts of a model matrix.<br>
+   *        Serves only as a return type and temporary data storage.
+   */
+  struct TransformContainer
+  {
+    TransformContainer() : scale_{1.f}, rotation_{1.f}, translation_{1.f}, skew_{1.f}, perspective_{1.f}{}
+    glm::vec3 scale_;
+    glm::mat4 rotation_;
+    glm::vec3 translation_;
+    glm::vec3 skew_;
+    glm::vec4 perspective_;    
+  };
+
+  //functions to compose/change a transform
+  std::array<QuadVertex, 4> defaultVertices(const glm::vec4& color);
+  glm::mat4 composeTransform(const TransformContainer& transformContainer);
+  TransformContainer decomposeTransform(const glm::mat4& transform);
+
+  glm::mat4 changePosition(const glm::mat4& transform, const glm::vec3& position);
+  glm::mat4 changeScale(const glm::mat4& transform, const glm::vec3& scale);
+  glm::mat4 changeRotation(const glm::mat4& transform, float angle, const glm::vec3& axis);
+
+  /**
+   *  \brief Implementation of a 2D renderer for OpenGL.
+   */
   class Renderer
   {
     public:
+      //Constructors and deconstructors 
       Renderer(const Renderer&) = default;
       Renderer(Renderer&&) = default;
       Renderer& operator=(const Renderer&) = default;
       Renderer& operator=(Renderer&&) = default;
+      ~Renderer();
             
       Renderer();
-      ~Renderer();
-      //param. constructors
 
-      //public member variables
+      //Member variables
 
-      //public member functions
+      //Member functions
 
       /**
        * \brief Initializes the renderer. Creates vertex array and buffer layout for the vertex buffer.
@@ -100,13 +169,13 @@ namespace Trem
        * @param quad Quad to be drawn.
        * @param texture Name of the texture to be used for rendering.
        */
-      void drawQuad(const Data::Quad& quad, const ShaPtr<Texture>& texture);
+      void drawQuad(const Quad& quad, const ShaPtr<Texture>& texture);
 
       /**
        * \brief Draw a quad with default texture.
        * @param quad Quad to be drawn.
        */
-      void drawQuad(Data::Quad& quad);
+      void drawQuad(Quad& quad);
 
       void beginScene();
 
@@ -116,9 +185,9 @@ namespace Trem
       void endScene();
 
     protected:
-      //protected member variables
+      //Member variables
 
-      //protected member functions
+      //Member functions
 
     private:
       unsigned int rendererId_; /**< unique id for the renderer*/
@@ -131,8 +200,8 @@ namespace Trem
       uint32_t usedIndices_; /**< Number of indices in use by the current batch*/
      
       //buffer storage
-      Data::QuadVertex* vertexBufferBase_; /**< physical storage for vertices */
-      Data::QuadVertex* vertexBufferIndex_;
+      QuadVertex* vertexBufferBase_; /**< physical storage for vertices */
+      QuadVertex* vertexBufferIndex_;
    
       //render components
       ShaPtr<VertexArray> vertexArray_;
@@ -140,7 +209,7 @@ namespace Trem
       ShaderLibrary       shaderLibrary_;
       TextureManager      textureManager_;
 
-      //private member functions
+      //Member functions
       //batch rendering
       /**
        * \brief Finishes as a batch and issues a draw call to draw the scene.
@@ -152,7 +221,7 @@ namespace Trem
        */
       void setIndices();
 
-      void loadVerticesToVertexBuffer(const std::array<Data::QuadVertex, 4>& vertices, const glm::mat4& transform, float textureUnit);
+      void loadVerticesToVertexBuffer(const std::array<QuadVertex, 4>& vertices, const glm::mat4& transform, float textureUnit);
   };
 
 }

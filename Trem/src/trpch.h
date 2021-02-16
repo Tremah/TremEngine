@@ -33,5 +33,5 @@
 //engine headers
 #include <trem/core/core.hpp>
 #include <trem/util/util.h>
-#include <trem/util/logger.h>
+#include <trem/core/service_locator.h>
 

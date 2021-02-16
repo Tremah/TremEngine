@@ -22,15 +22,9 @@ namespace Trem
   class Shader
   {
   public:
-    /*
-    Shader(const Shader&) = default;
-    Shader(Shader&&) = default;
-    Shader& operator=(const Shader&) = default;
-    Shader& operator=(Shader&&) = default;
-    ~Shader() = default;*/
-
+    //Constructors and deconstructors 
     Shader() : shaderId_{0} {}
-    //param. constructors
+
     /**
      * \brief Parameterized constructor to construct a shader from a file.<br>
      *        The name of the shader is set via input parameter name
@@ -39,9 +33,9 @@ namespace Trem
      */
     Shader(const std::string& name, const std::string& filePath);
 
-    //public member variables
+    //Member variables
 
-    //public member functions
+    //Member functions
     /**
      * \brief Binds the shader.
      */
@@ -79,16 +73,16 @@ namespace Trem
     void uploadUniformIntArray(const std::string& name, const int32_t* values, uint32_t count) const;
 
   protected:
-    //protected member variables
+    //Member variables
 
-    //protected member functions
+    //Member functions
 
   private:
     uint32_t shaderId_; /**< id for the shader*/
     std::string name_;
-    //private member variables
+    //Member variables
 
-    //private member functions
+    //Member functions
     /**
      * \brief Extract the different shaders from a string.
      * @param shaderSource Shader source.

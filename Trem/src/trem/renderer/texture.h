@@ -21,12 +21,12 @@ namespace Trem
   class Texture
   {
     public:
+      //Constructors and deconstructors 
       Texture(const Texture&) = default;
       Texture(Texture&&) = default;
       Texture& operator=(const Texture&) = default;
       Texture& operator=(Texture&&) = default;
 
-      //param. constructors
       /**
        * \brief Parameterized constructor to construct a Texture from a file path.
        * @param filePath Path to the texture's source file.
@@ -34,9 +34,9 @@ namespace Trem
       Texture(const std::string& filePath);
       ~Texture();
 
-      //public member variables
+      //Member variables
 
-      //public member functions
+      //Member functions
       /**
        * \brief Returns a 2D vector containing width and height of the texture.
        * \return 2D vector containing width and height
@@ -46,12 +46,12 @@ namespace Trem
       uint32_t id() const;
 
     protected:
-     //protected member variables
+     //Member variables
 
-     //protected member functions
+     //Member functions
 
     private:
-     //private member variables
+     //Member variables
       uint32_t textureId_;    
       std::string name_;
       int32_t width_;                
@@ -59,6 +59,6 @@ namespace Trem
       int32_t bPP_;                  /**< bits per pixel, png channels, etc.*/
       unsigned char* textureBuffer_; /**< raw pointer bcs. of stb_image */
 
-     //private member functions
+     //Member functions
  };
 }

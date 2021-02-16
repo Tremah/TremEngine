@@ -24,20 +24,20 @@ namespace Trem
     glBindVertexArray(0);
   }
 
-  void VertexArray::create(const uint32_t maxVertices, const uint32_t maxIndices)
+  void VertexArray::createBuffers(const uint32_t maxVertices, const uint32_t maxIndices)
   {    
     bind();
     //define the vertex buffer layout
     bufferLayout_ = CreateShared<BufferLayout>();
     defineVbLayout();
 
-    //create the vertex buffer
+    //createBuffers the vertex buffer
     uint32_t vbSize = maxVertices * bufferLayout_->layoutStats().stride_;
     vertexBuffer_ = CreateShared<VertexBuffer>(vbSize);
     //set vertex attribute pointers for the vb
     defineVb();
     
-    //create the index buffer
+    //createBuffers the index buffer
     uint32_t ibSize = maxIndices * sizeof(uint32_t);
     indexBuffer_ = CreateShared<IndexBuffer>(ibSize);
   }
@@ -45,10 +45,10 @@ namespace Trem
   void VertexArray::defineVbLayout() const
   {
     //define vertex buffer layout
-    bufferLayout_->addBufferElement("position",       Data::BufferElementType::Float4);
-    bufferLayout_->addBufferElement("color",          Data::BufferElementType::Float4);
-    bufferLayout_->addBufferElement("texCoordinates", Data::BufferElementType::Float2); 
-    bufferLayout_->addBufferElement("texUnit",        Data::BufferElementType::Float); 
+    bufferLayout_->addBufferElement("position",       BufferElementType::Float4);
+    bufferLayout_->addBufferElement("color",          BufferElementType::Float4);
+    bufferLayout_->addBufferElement("texCoordinates", BufferElementType::Float2); 
+    bufferLayout_->addBufferElement("texUnit",        BufferElementType::Float); 
   }
 
   void VertexArray::defineVb() const

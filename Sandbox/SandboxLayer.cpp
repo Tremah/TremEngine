@@ -18,11 +18,11 @@ void SandboxLayer::init(const Trem::TextureManager& textureManager)
   
   for(std::size_t i=0; i < elementCount; i++)
   {  
-    Trem::Data::Quad white{};
+    Trem::Quad white{};
     white.setScale({10.f, 10.f, 1.f});
     gameObjects_.push_back(white);
   }
-  Trem::Data::Quad cowboy{glm::vec4{1.f}, glm::vec3{200.f, 300.f, 0.f}, textureManager.texture("cowboy_large")};
+  Trem::Quad cowboy{glm::vec4{1.f}, glm::vec3{200.f, 300.f, 0.f}, textureManager.texture("cowboy_large")};
   gameObjects_.push_back(cowboy);
 }
 

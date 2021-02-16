@@ -22,12 +22,12 @@ namespace Trem
     IndexBuffer& operator=(IndexBuffer&&) = default;
     
     ~IndexBuffer();
-    //param. constructors
+    //Constructors and deconstructors 
     IndexBuffer(uint32_t size);
 
-    //public member variables
+    //Member variables
 
-    //public member functions
+    //Member functions
     /**
       \brief Binds the index buffer
      */
@@ -38,14 +38,14 @@ namespace Trem
     static void unbind();
 
   protected:
-    //protected member variables
+    //Member variables
 
-    //protected member functions
+    //Member functions
 
   private:
-    //private member variables
+    //Member variables
     unsigned int indexBufferId_; /**< unique opengl id*/
 
-    //private member functions
+    //Member functions
   };
 }

@@ -29,9 +29,9 @@ namespace Trem
 
       //custom constructors
 
-      //public member variables
+      //Member variables
 
-      //public member functions
+      //Member functions
       /**
         \brief Binds the vertex array for usage.
        */
@@ -43,23 +43,23 @@ namespace Trem
       static void unbind();
 
       /**
-       * \brief Create the vertex array and underlying opengl objects.
-       * @param maxVertices Maximum number of vertices per draw call.
-       * @param maxIndices Maximum number of indices per draw call.
+       * \brief Creates the underlying opengl buffer objects.
+       * @param maxVertices Size of the vertex buffer.
+       * @param maxIndices  Size of the index buffer.
        */
-      void create(uint32_t maxVertices, uint32_t maxIndices);
+      void createBuffers(uint32_t maxVertices, uint32_t maxIndices);
 
       ShaPtr<IndexBuffer> indexBuffer() const;
       ShaPtr<VertexBuffer> vertexBuffer() const;
       ShaPtr<BufferLayout> bufferLayout() const;
 
     protected:
-      //protected member variables
+      //Member variables
 
-      //protected member functions
+      //Member functions
 
     private:
-      //private member variables
+      //Member variables
       unsigned int vertexArrayId_; /**< unique opengl id*/
       ShaPtr<VertexBuffer> vertexBuffer_;
       ShaPtr<BufferLayout> bufferLayout_;
@@ -76,6 +76,6 @@ namespace Trem
        */
       void defineVb() const; 
 
-      //private member functions
+      //Member functions
   };
 }

@@ -8,14 +8,15 @@
 
 //game engine includes
 #include <trem/core/layer.h>
-#include <trem/ui/window.h>
+#include <trem/core/window.h>
 #include <trem/renderer/renderer.h>
 #include <trem/renderer/camera.h>
-#include <trem/event/event.h>
-#include <trem/event/key_events.h>
-#include <trem/event/mouse_events.h>
-#include <trem/event/event_handler.hpp>
+#include <trem/message/message.h>
+#include <trem/message/key_events.h>
+#include <trem/message/mouse_events.h>
+#include <trem/message/message_handler.h>
 #include <trem/util/timer.h>
+#include <trem/core/service_locator.h>
 
 /**
  *  \brief Foundation class for a game.<br>
@@ -28,12 +29,12 @@ namespace Trem
   class Game
   {
     public:   
-      //param. constructors      
+      //Constructors and deconstructors     
       Game(const std::string& name);
 
-      //public member variables
+      //Member variables
 
-      //public member functions
+      //Member functions
       /**
        * \brief Initializes the game window, renderer state variables and logger.<br>
        *        Calls init functions of the game layers.
@@ -52,7 +53,7 @@ namespace Trem
 
       /**
        * \brief Restarts the game loop.<br>
-       *        Called after the game was halted through an event and needs to be restarted.
+       *        Called after the game was halted through a message and needs to be restarted.
        */
       void resume();
       
@@ -62,16 +63,16 @@ namespace Trem
       void shutdown();
 
       /**
-       * \brief Global event handler.
-       * @param ev Event to be handled.
+       * \brief Global message handler.
+       * @param msg Message to be handled.
        */
-      void handleEvent(Event& ev);
+      void handleMessage(UnqPtr<Message>&& msg);
 
       /**
-       * \brief Global event handler.
-       * @param ev Event to be handled.
+       * \brief Global message handler.
+       * @param msg Message to be handled.
        */
-      bool handleGameEvents(Event& ev);
+      bool handleGameMessages(const UnqPtr<Message>& msg);
 
       /**
        * \brief Add a game layer to the layer list.
@@ -80,25 +81,30 @@ namespace Trem
       void addLayer(Layer* layer);
 
     protected:
-      //protected member variables
+      //Member variables
 
-      //protected member functions
+      //Member functions
 
     private:
-      //private member variables
-      static constexpr glm::uvec2 defaultWindowSize_{1600, 900};
+      //Member variables
 
       std::string name_;
       bool running_ = false;
       bool minimized_ = false;
-      Window window_;
+      ShaPtr<Window> window_;
       Renderer renderer_;
       Camera   camera_;
+      MessageHandler msgHandler_;
       //EventHandler eventHandler;
 
-      std::vector<Layer*> layerList_;
+      //singleton fields
+      static bool instantiated_;
 
-      //private member functions
+      //temp
+      std::vector<Layer*> layerList_;
+      static constexpr glm::uvec2 defaultWindowSize_{1600, 900};
+
+      //Member functions
   };
 
   //to be defined in the client   

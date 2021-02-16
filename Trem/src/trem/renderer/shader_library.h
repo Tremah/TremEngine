@@ -20,11 +20,10 @@ namespace Trem
   class ShaderLibrary
   {
     public:
-      //param. constructors
+      //Constructors and deconstructors 
+      //Member variables
 
-      //public member variables
-
-      //public member functions
+      //Member functions
       /**
        * \brief Loads shader assets from an asset list into the library.<br>
        *        The asset list provides names and file paths for different shader assets.<br>
@@ -45,16 +44,16 @@ namespace Trem
       ShaPtr<Shader> shader(const std::string& name) const;
 
     protected:
-      //protected member variables
+      //Member variables
 
-      //protected member functions
+      //Member functions
 
     private:
-      //private member variables
+      //Member variables
       std::unordered_map<std::string, ShaPtr<Shader>> shaderLibrary_; 
       static constexpr char assetList_[] = "assets/assets.json";
 
-      //private member functions
+      //Member functions
       /**
        * \brief Adds a shader to the shader library.
        * @param shader Shader to be added

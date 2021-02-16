@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 //c++ includes
+#include <random>
 
 //external library includes
 
@@ -8,7 +9,7 @@
 
 //game engine includes
 #include <trem.h>
-#include <random>
+#include <trem/core/service_locator.h>
 
 /**
  *  \brief Brief Description

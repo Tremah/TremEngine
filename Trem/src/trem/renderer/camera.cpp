@@ -5,35 +5,46 @@ namespace Trem
 {
   Camera::Camera(float left, float right, float bottom, float top)
   {
-    //create the cameras transform (view matrix) and the projection matrix for the entire scene
+    //createBuffers the cameras transform (view matrix) and the projection matrix for the entire scene
     //and combine them into the view-projection matrix     
     viewMatrix_           = glm::translate(glm::mat4{1.f}, position_) * glm::rotate(glm::mat4{1.f}, rotationAngle_, {0.f, 0.f, 1.f});
     projectionMatrix_     = glm::ortho(left, right, bottom, top, 1.f, -1.f);
     viewProjectionMatrix_ = projectionMatrix_ * glm::inverse(viewMatrix_);
   }
 
-  void Camera::move(KeyEvent* ev)
+  bool Camera::move(KeyEvent* ev)
   {
-    glm::vec3 camMovement{0.f};
-    float camSpeed = 5.f;
+    glm::vec3 distance{0.f};
+    bool moved = false;
     switch (ev->keycode())
     {
       case Key::W:
-        camMovement.y = camSpeed;
+        distance.y =  movementSpeed_;
+        moved = true;
         break;
       case Key::S:
-        camMovement.y = -camSpeed;
+        distance.y = -movementSpeed_;
+        moved = true;
         break;
       case Key::A:
-        camMovement.x = -camSpeed;
+        distance.x = -movementSpeed_;
+        moved = true;
         break;
       case Key::D:
-        camMovement.x = camSpeed;
+        distance.x =  movementSpeed_;
+        moved = true;
         break;
+      default:
+        moved = false;
+    }
+    setPosition(position_ + distance);    
+
+    if(moved)
+    {
+      ServiceLocator::logger().debug("camera moved to x:{0}, y:{1}", position_.x, position_.y);
     }
 
-    setPosition(position_ + camMovement);    
-    Logger::logger()->info("camera moved to x:{0}, y:{1}", position_.x, position_.y);
+    return moved;
   }
 
   //setters
@@ -49,9 +60,9 @@ namespace Trem
     calculateViewProjectionMatrix();
   }
 
-  void Camera::setEventCallback(const std::function<void(Event&)>& callback)
+  void Camera::setMsgCallback(const MsgQueueCallback& callback)
   {
-    eventCallback_ = callback;
+    msgCallback_ = callback;
   }
 
   void Camera::setPosition(const glm::vec3& position)
@@ -101,19 +112,21 @@ namespace Trem
     return viewProjectionMatrix_;
   }
 
-  bool Camera::handleEvent(Event& ev)
+  bool Camera::handleMessage(const UnqPtr<Message>& msg)
   {
-    if(ev.inCategory(EventCategory::KeyboardEvent))
+    if(msg->inCategory(MsgCategories::KeyboardEvent))
     {
-      KeyEvent* keyEvent = static_cast<KeyEvent*>(&ev);
-      move(keyEvent);
+      KeyEvent* keyEvent = static_cast<KeyEvent*>(msg.get());
+      return move(keyEvent);
     }
-    if(ev.type() == EventType::WindowResized)
+
+    if(msg->type() == MsgTypes::WindowResized)
     {
-      WindowResizedEvent* windowResizedEvent = static_cast<WindowResizedEvent*>(&ev);
+      WindowResizedEvent* windowResizedEvent = static_cast<WindowResizedEvent*>(msg.get());
       float right = static_cast<float>(windowResizedEvent->windowSize_.x);
       float top = static_cast<float>(windowResizedEvent->windowSize_.y);
       calculateProjectionMatrix(0.f, right, 0.f, top);
+      return true;
     }
     return false;
   }

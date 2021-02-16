@@ -23,11 +23,10 @@ namespace Trem
   {
 
     public:
-      //param. constructors
+      //Constructors and deconstructors
+      //Member variables
 
-      //public member variables
-
-      //public member functions
+      //Member functions
       static void startSession();
       static void stopSession();
       static TimePointType now();
@@ -35,19 +34,18 @@ namespace Trem
       static DeltaMillis  deltaMillis(TimePointType previous, TimePointType current);    
 
     protected:
-      //protected member variables
-
-      //protected member functions
+      //Member variables
+      //Member functions
 
     private:
-      //private member variables
+      //Member variables
       static bool sessionActive_;      
       static TimePointType startTime_;
       static DeltaSeconds  totalTime_;
       static DeltaSeconds  frameTime_;
       static DeltaSeconds  lastFrameTime_;
 
-      //private member functions
+      //Member functions
       
   };
 }

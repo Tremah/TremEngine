@@ -3,28 +3,52 @@
 
 namespace Trem  
 {
-  Game::Game(const std::string& name) : name_{name}, window_{defaultWindowSize_.x, defaultWindowSize_.y, name_}
+  //initialize static fields  
+  bool Game::instantiated_ = false;
+
+  Game::Game(const std::string& name) : name_{name}, msgHandler_{}
   {
-    camera_ = Camera{0.f, static_cast<float>(window_.width()), 0.f, static_cast<float>(window_.height())};
-    //set event callbacks
-    window_.setEventCallback([this](auto&&... args) -> decltype(auto) { return this->handleEvent(std::forward<decltype(args)>(args)...); });
-    camera_.setEventCallback([this](auto&&... args) -> decltype(auto) { return this->handleEvent(std::forward<decltype(args)>(args)...); });
-    //eventHandler_ = EventHandler{};
+    TR_ASSERT(!instantiated_, "Game class already instantiated!")
+    instantiated_ = true;
+    window_ = CreateShared<Window>(defaultWindowSize_.x, defaultWindowSize_.y, name_);
+    camera_ = Camera{0.f, static_cast<float>(window_->width()), 0.f, static_cast<float>(window_->height())};
   }
 
   void Game::start()
   {
-    std::cout << "Game starting..." << std::endl;
-    Logger::init();    
 
-    window_.init();
+    //Init services
+    ServiceLocator::setLogger(Logger{});
+    ServiceLocator::logger().debug("Game starting...");
+
+    window_->init();
     renderer_.init();
     renderer_.activeShader()->uploadUniformMat4("uMvp", camera_.viewProjectionMatrix());
+        
+    //set message callbacks    
+    window_->setMsgCallback([this](auto&& msg) -> decltype(auto) { return this->handleMessage(std::forward<decltype(msg)>(msg)); });
+    camera_.setMsgCallback([this](auto&& msg) -> decltype(auto) { return this->handleMessage(std::forward<decltype(msg)>(msg)); });
+
+    //subscribe to message system
+    msgHandler_.subscribe(MsgTypes::KeyPressed, [this](const auto& msg)          -> decltype(auto) { return this->window_->handleKeyEvent(msg); });
+    msgHandler_.subscribe(MsgTypes::WindowResized, [this](const auto& msg)       -> decltype(auto) { return this->window_->handleWindowEvent(msg); });
+    msgHandler_.subscribe(MsgTypes::WindowMinimized, [this](const auto& msg)     -> decltype(auto) { return this->window_->handleWindowEvent(msg); });
+    msgHandler_.subscribe(MsgTypes::LMouseButtonPressed, [this](const auto& msg) -> decltype(auto) { return this->window_->handleMouseEvent(msg); });
+
+    msgHandler_.subscribe(MsgTypes::KeyPressed, [this](const auto& msg)          -> decltype(auto) { return this->camera_.handleMessage(msg); });
+    msgHandler_.subscribe(MsgTypes::KeyRepeated,[this](const auto& msg)          -> decltype(auto) { return this->camera_.handleMessage(msg); });
+    msgHandler_.subscribe(MsgTypes::WindowResized, [this](const auto& msg)       -> decltype(auto) { return this->camera_.handleMessage(msg); });
+
+    msgHandler_.subscribe(MsgTypes::WindowResized, [this](const auto& msg)       -> decltype(auto) { return this->handleGameMessages(msg); });
+    msgHandler_.subscribe(MsgTypes::WindowClosed, [this](const auto& msg)        -> decltype(auto) { return this->handleGameMessages(msg); });
+    msgHandler_.subscribe(MsgTypes::WindowMinimized, [this](const auto& msg)     -> decltype(auto) { return this->handleGameMessages(msg); });
+
+   
 
     for(auto& layer : layerList_)
     {
       layer->init(renderer_.textureManager());
-    }
+    }         
 
     running_ = true;
   }
@@ -35,7 +59,7 @@ namespace Trem
     auto currentTime = previousTime;
 
     const auto desiredFps = 60;
-    const double delta = (1000 / 60);
+    const double delta = (1000. / desiredFps);
     const DeltaMillis desiredDelta{delta};
     DeltaSeconds deltaAccumulator{0};
     
@@ -72,7 +96,8 @@ namespace Trem
         layer->render(renderer_);
       }      
       renderer_.endScene();
-      window_.swapBuffer();
+      window_->update();
+      msgHandler_.processQueue();
     }    
   }
 
@@ -97,37 +122,22 @@ namespace Trem
     running_ = false;
   }
 
-  void Game::handleEvent(Event& ev)
+  void Game::handleMessage(UnqPtr<Message>&& msg)
   {
-    EventHandler eventHandler{ev};   
-    //dispatch to camera
-    eventHandler.dispatch<KeyPressedEvent>([this](auto&&... args)          -> decltype(auto) { return this->camera_.handleEvent(std::forward<decltype(args)>(args)...); });
-    eventHandler.dispatch<KeyRepeatedEvent>([this](auto&&... args)         -> decltype(auto) { return this->camera_.handleEvent(std::forward<decltype(args)>(args)...); });
-    eventHandler.dispatch<WindowResizedEvent>([this](auto&&... args)       -> decltype(auto) { return this->camera_.handleEvent(std::forward<decltype(args)>(args)...); });
-
-    //dispatch to window
-    eventHandler.dispatch<KeyPressedEvent>([this](auto&&... args)          -> decltype(auto) { return this->window_.handleKeyEvent(std::forward<decltype(args)>(args)...); });
-    eventHandler.dispatch<LMouseButtonPressedEvent>([this](auto&&... args) -> decltype(auto) { return this->window_.handleMouseEvent(std::forward<decltype(args)>(args)...); });
-    //eventHandler.dispatch<WindowResizedEvent>([this](auto&&... args)       -> decltype(auto) { return this->window_.handleWindowEvent(std::forward<decltype(args)>(args)...); });
-    eventHandler.dispatch<WindowMinimizedEvent>([this](auto&&... args)     -> decltype(auto) { return this->window_.handleWindowEvent(std::forward<decltype(args)>(args)...); });
-
-    //application level events, dispatch to internal functions
-    eventHandler.dispatch<WindowResizedEvent>([this](auto&&... args)   -> decltype(auto) { return this->handleGameEvents(std::forward<decltype(args)>(args)...); });
-    eventHandler.dispatch<WindowMinimizedEvent>([this](auto&&... args) -> decltype(auto) { return this->handleGameEvents(std::forward<decltype(args)>(args)...); });
-    eventHandler.dispatch<WindowClosedEvent>([this](auto&&... args)    -> decltype(auto) { return this->handleGameEvents(std::forward<decltype(args)>(args)...); });
+    msgHandler_.queue(std::move(msg));
   }
 
-  bool Game::handleGameEvents(Event& ev)
+  bool Game::handleGameMessages(const UnqPtr<Message>& msg)
   {
-    switch(ev.type())
+    switch(msg->type())
     {
-      case EventType::WindowMinimized:
+      case MsgTypes::WindowMinimized:
         pause(); 
         return true;
-      case EventType::WindowResized:
+      case MsgTypes::WindowResized:
         resume();
         return true;
-      case EventType::WindowClosed:
+      case MsgTypes::WindowClosed:
         running_ = false;
         return true;
       default:

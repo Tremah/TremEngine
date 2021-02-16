@@ -6,7 +6,7 @@ namespace Trem
   Renderer::Renderer() : rendererId_{0}, usedIndices_{0}, activeShader_{nullptr}
   {
     //initialize pointers to vertices
-    vertexBufferBase_ = new Data::QuadVertex[maxVertices_];
+    vertexBufferBase_ = new QuadVertex[maxVertices_];
     vertexBufferIndex_ = vertexBufferBase_;
   }
 
@@ -17,7 +17,7 @@ namespace Trem
 
   void Renderer::init()
   {
-    //create opengl components
+    //createBuffers opengl components
     vertexArray_ = CreateShared<VertexArray>();
 
     //load shaders
@@ -37,8 +37,8 @@ namespace Trem
     }
     activeShader_->uploadUniformIntArray("uTextures", samplers.data(), maxTextureUnits);
         
-    //create vao, vbo, ebo
-    vertexArray_->create(maxVertices_, maxIndices_);
+    //createBuffers vao, vbo, ebo
+    vertexArray_->createBuffers(maxVertices_, maxIndices_);
     //set ebo
     setIndices();
   }  
@@ -65,7 +65,7 @@ namespace Trem
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, maxIndices_ * sizeof(GLuint), &(indices.front()));
   }
 
-  void Renderer::loadVerticesToVertexBuffer(const std::array<Data::QuadVertex, 4>& vertices, const glm::mat4& transform, const float textureUnit)
+  void Renderer::loadVerticesToVertexBuffer(const std::array<QuadVertex, 4>& vertices, const glm::mat4& transform, const float textureUnit)
   {
     for (const auto& vertex : vertices)
     {
@@ -120,7 +120,7 @@ namespace Trem
   void Renderer::drawQuad(const glm::mat4& transform, const glm::vec4& color)
   {
     //add quad vertices to intermediate storage 
-    loadVerticesToVertexBuffer(Data::defaultVertices(color), transform, 0.f);
+    loadVerticesToVertexBuffer(defaultVertices(color), transform, 0.f);
 
     const uint32_t vertexCount = static_cast<uint32_t>(vertexBufferIndex_ - vertexBufferBase_);
 
@@ -134,11 +134,11 @@ namespace Trem
   //--- texture drawing ---
   //-----------------------
 
-  void Renderer::drawQuad(const Data::Quad& quad, const ShaPtr<Texture>& texture)
+  void Renderer::drawQuad(const Quad& quad, const ShaPtr<Texture>& texture)
   {
     //bind texture
     int32_t texUnit = textureManager_.bindTexture(quad.texture_->name());
-    //glm::mat4 transform = Data::changeScale(quad.transform_, {texture->dimensions(), 1.f});
+    //glm::mat4 transform = changeScale(quad.transform_, {texture->dimensions(), 1.f});
     loadVerticesToVertexBuffer(quad.vertices_, quad.transform_, static_cast<float>(texUnit));
 
     const uint32_t vertexCount = static_cast<uint32_t>(vertexBufferIndex_ - vertexBufferBase_);
@@ -148,7 +148,7 @@ namespace Trem
     }
   }
 
-  void Renderer::drawQuad(Data::Quad& quad)
+  void Renderer::drawQuad(Quad& quad)
   {
     //add quad vertices to intermediate storage 
     int32_t texUnit = 0;
@@ -200,4 +200,142 @@ namespace Trem
   {
     flushBatch();
   }
+
+
+
+  //---------------------------------------------------------
+  //--- Object data, definition of geometrical primitives ---
+  //---------------------------------------------------------
+  
+  Quad::Quad()
+  { 
+    //define vertices with white color
+    vertices_ = defaultVertices(glm::vec4{1.f});
+  }
+
+  Quad::Quad(const glm::vec4& color, const glm::mat4& transform) : transform_{transform}
+  {
+    vertices_ = defaultVertices(color);
+  }
+
+  Quad::Quad(const glm::vec4& color, const glm::vec3& position, const glm::vec3& scale, const glm::mat4& transform)
+  {
+    vertices_  = defaultVertices(color);
+    position_  = position;
+    scale_     = scale;
+    transform_ = glm::translate(glm::mat4{1.f}, position_) * glm::scale(glm::mat4{1.f}, scale_);
+  }
+
+  Quad::Quad(const glm::vec4& color, ShaPtr<Texture> texture) : texture_{std::move(texture)}
+  {
+    vertices_  = defaultVertices(color);
+    //use size of texture to scale the quad
+    scale_     = {texture_->dimensions(), 1.f};
+    transform_ = glm::scale(glm::mat4{1.f}, scale_);
+  }
+
+  Quad::Quad(const glm::vec4& color, const glm::vec3& position, ShaPtr<Texture> texture) : texture_{std::move(texture)}
+  {
+    vertices_  = defaultVertices(color); 
+    scale_     = {texture_->dimensions(), 1.f};
+    position_  = position;
+    transform_ = glm::translate(glm::mat4{1.f}, position_) * glm::scale(glm::mat4{1.f}, scale_);
+  }
+
+  Quad::Quad(const glm::vec4& color, const glm::vec3& position, const glm::vec3& scale, ShaPtr<Texture> texture) : texture_{std::move(texture)}
+  {
+    vertices_  = defaultVertices(color); 
+    scale_     = scale;
+    position_  = position;
+    transform_ = glm::translate(glm::mat4{1.f}, position_) * glm::scale(glm::mat4{1.f}, scale_);
+  }
+
+  void Quad::setPosition(const glm::vec3& position)
+  {
+    position_ = position;
+    calculateTransform();
+  }
+
+  void Quad::setScale(const glm::vec3& scale)
+  {
+    scale_ = scale;
+    calculateTransform();
+  }
+
+  void Quad::setRotation(const float rotation)
+  {
+    rotation_ = rotation;
+    calculateTransform();
+  }
+
+  void Quad::setColor(const glm::vec4& color)
+  {
+    vertices_ = defaultVertices(color);
+  }
+
+  void Quad::calculateTransform()
+  {
+    transform_ = glm::translate(glm::mat4{1.f}, position_) * 
+                 glm::rotate(glm::mat4{1.f}, rotation_, {0.f, 0.f, 1.f}) *
+                 glm::scale(glm::mat4{1.f}, scale_);
+  }
+
+  std::array<QuadVertex, 4> defaultVertices(const glm::vec4& color)
+  {
+    std::array<QuadVertex, 4> vertices =
+    {
+      QuadVertex{glm::vec4{0.f, 0.f, 0.f, 1.0f}, color, glm::vec2{0.0f, 0.0f}}, //bottom left
+      QuadVertex{glm::vec4{1.f, 0.f, 0.f, 1.0f}, color, glm::vec2{1.0f, 0.0f}}, // bottom right
+      QuadVertex{glm::vec4{1.f, 1.f, 0.f, 1.0f}, color, glm::vec2{1.f, 1.f}},   //top right
+      QuadVertex{glm::vec4{0.f, 1.f, 0.f, 1.0f}, color, glm::vec2{0.f, 1.f}}    // top left
+    };
+
+    return vertices;
+  }
+
+  glm::mat4 composeTransform(const TransformContainer& transformContainer)
+  {
+    glm::mat4 rotation    = transformContainer.rotation_;
+    glm::mat4 translation = glm::translate(glm::mat4{1.f}, transformContainer.translation_);
+    glm::mat4 scale       = glm::scale(glm::mat4{1.f}, transformContainer.scale_);
+    glm::mat4 transform   = translation * rotation * scale;
+
+    return transform;
+  }
+
+  TransformContainer decomposeTransform(const glm::mat4& transform)
+  {
+    TransformContainer transformContainer{};
+    glm::quat orientation;
+    glm::decompose(transform, transformContainer.scale_, orientation, transformContainer.translation_, transformContainer.skew_, transformContainer.perspective_);
+    //convert quaternion to 4x4 matrix
+    transformContainer.rotation_ = glm::toMat4(orientation);
+
+    return transformContainer;
+  }
+
+  glm::mat4 changePosition(const glm::mat4& transform, const glm::vec3& position)
+  {
+    TransformContainer tContainer = decomposeTransform(transform);
+    tContainer.translation_ = position;
+
+    return composeTransform(tContainer);
+  }
+
+  glm::mat4 changeScale(const glm::mat4& transform, const glm::vec3& scale)
+  {
+    TransformContainer tContainer = decomposeTransform(transform);
+    tContainer.scale_ = scale;
+
+    return composeTransform(tContainer);
+  }
+
+  glm::mat4 changeRotation(const glm::mat4& transform, const float angle, const glm::vec3& axis)
+  {
+    TransformContainer tContainer = decomposeTransform(transform);
+    tContainer.rotation_ = glm::rotate(glm::mat4{1.f}, angle, axis);
+
+    return composeTransform(tContainer);
+  }
+
 }

@@ -22,34 +22,24 @@ namespace Trem
   class Logger
   {
     public:
-      /*
-        only needed if one of them is declared explicitly
-    
-        logger(const logger&) = default;
-        logger(logger&&) = default;
-        logger& operator=(const logger&) = default;
-        logger& operator=(logger&&) = default;
-        ~logger() = default;
-      */
-      
-      //param. constructors
+      //Constructors and deconstructors
+      Logger(); 
 
-      //public member variables
+      //Member variables
+      spdlog::logger& logger();
 
-      //public member functions
-      static void init();
-      static ShaPtr<spdlog::logger>& logger();
+      //Member functions
 
     protected:
-      //protected member variables
+      //Member variables
 
-      //protected member functions
+      //Member functions
 
     private:
-      //private member variables
-      static ShaPtr<spdlog::logger> logger_;
+      //Member variables
+      spdlog::logger logger_ = spdlog::logger("Default Logger");
 
-      //private member functions
+      //Member functions
       
   };
 }

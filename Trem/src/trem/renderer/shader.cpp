@@ -33,7 +33,7 @@ namespace Trem
 
     for (const auto& [type, source] : shaderSources)
     {
-      //create and compile shader
+      //createBuffers and compile shader
       uint32_t shader = glCreateShader(type);
       const char* shaderCode = source.c_str();
       glShaderSource(shader, 1, &shaderCode, nullptr);

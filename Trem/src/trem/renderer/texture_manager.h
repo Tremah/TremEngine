@@ -9,7 +9,6 @@
 
 //game engine includes
 #include <trem/renderer/texture.h>
-#include <trem/data/data.h>
 #include <trem/util/file.h>
 
 /**
@@ -21,12 +20,12 @@ namespace Trem
   class TextureManager
   {
     public:
+      //Constructors and deconstructors 
       TextureManager(): textureUnits_{nullptr} {}
-      //param. constructors
 
-      //public member variables
+      //Member variables
 
-      //public member functions
+      //Member functions
       /**
        * \brief Load textures from the asset list
        * @param bind Bind the textures on load (default = false)
@@ -41,12 +40,12 @@ namespace Trem
       static uint32_t maxTextureUnits();
 
     protected:
-      //protected member variables
+      //Member variables
 
-      //protected member functions
+      //Member functions
 
     private:
-      //private member variables    
+      //Member variables    
       //TODO can/will be replaced by dynamic deduction from opengl parameter
       static constexpr uint8_t maxTextureUnits_ = 32; 
       std::unordered_map<std::string, ShaPtr<Texture>> textureLibrary_; /**< Texture storage, identified by texture name*/  
@@ -56,7 +55,7 @@ namespace Trem
       std::array<ShaPtr<Texture>, maxTextureUnits_> textureUnits_;
       static constexpr char assetList_[] = "assets/assets.json";
 
-      //private member functions
+      //Member functions
       void add(const std::string& name, ShaPtr<Texture>&& texture);
       bool exists(const std::string& name) const;
       bool bound(const std::string& name) const;

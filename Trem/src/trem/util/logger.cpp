@@ -3,18 +3,15 @@
 
 namespace Trem
 {
-  ShaPtr<spdlog::logger> Logger::logger_;
-
-  void Logger::init()
+  Logger::Logger()
   {
-    logger_ = CreateShared<spdlog::logger>("Default Logger");
-    logger_->set_level(spdlog::level::trace);
+    logger_.set_level(spdlog::level::trace);
     auto consoleSink = CreateShared<spdlog::sinks::stdout_color_sink_st>(spdlog::color_mode::always);
     consoleSink->set_pattern("[%H:%M:%S] [%^%l%$] %v");
-    logger_->sinks().push_back(consoleSink);
+    logger_.sinks().push_back(consoleSink);
   }
 
-  ShaPtr<spdlog::logger>& Logger::logger()
+  spdlog::logger& Logger::logger()
   {
     return logger_;
   }
