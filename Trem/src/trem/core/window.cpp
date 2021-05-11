@@ -39,12 +39,13 @@ namespace Trem
     int gladStatus = gladLoadGLLoader((GLADloadproc)(glfwGetProcAddress));
     TR_ASSERT(gladStatus, "GLAD could not be initialized!")
 
-    //createBuffers viewport
+    //create viewport
     glViewport(0, 0, windowData_.width_, windowData_.height_);
 
     //opengl debugging
     glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);    
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);   
+
     //set callbacks
     setGlfwCallbacks();
 
@@ -57,8 +58,11 @@ namespace Trem
 
     //supply GLFW with the windowData struct
     glfwSetWindowUserPointer(window_, &windowData_);    
-
     windowCount_++;
+
+    //register signal callbacks
+    ServiceLocator::dispatcher().connect<KeyPressedEvent, &Window::handleKeyEvent>(*this);
+    ServiceLocator::dispatcher().connect<LMouseButtonPressedEvent, &Window::handleMouseEvent>(*this);
 
     //print opengl info
     ServiceLocator::logger().debug("Graphics vendor: {0}", glGetString(GL_VENDOR));
@@ -104,11 +108,6 @@ namespace Trem
     return state == GLFW_PRESS;    
   }
 
-  void Window::setMsgCallback(const MsgQueueCallback& callback)
-  {
-    windowData_.msgCallback_ = callback;
-  }
-
   glm::vec2 Window::mousePosition() const
   {
     double x, y;
@@ -126,29 +125,20 @@ namespace Trem
     return mousePosition().y;
   }
  
-  bool Window::handleKeyEvent(const UnqPtr<Message>& msg) const
+  bool Window::handleKeyEvent(KeyPressedEvent& kpEvent) const
   {
-    if(msg->type() == MsgTypes::KeyPressed || msg->type() == MsgTypes::KeyReleased)
-    {      
-      KeyEvent* keyEvent = static_cast<KeyEvent*>(msg.get());
-      if(keyEvent->keycode() == Key::Escape)
-      {
-        windowData_.msgCallback_(CreateUnique<WindowClosedEvent>());
-        return true;
-      }
+    if(kpEvent.keycode() == Key::Escape)
+    {
+      ServiceLocator::dispatcher().enqueue<WindowClosedEvent>();
+      return true;
     }
-    return false;
+    return true;
   }
 
-  bool Window::handleMouseEvent(const UnqPtr<Message>& msg) const
+  bool Window::handleMouseEvent(LMouseButtonPressedEvent& lmbpEvent) const
   {
    ServiceLocator::logger().debug("mouse coordinates on click: {0}, {1}", mouseX(), static_cast<float>(windowData_.height_) - mouseY());
    return true;
-  }
-
-  bool Window::handleWindowEvent(const UnqPtr<Message>& msg) const
-  {
-    return false;
   }
 
   void Window::setGlfwCallbacks() const
@@ -159,15 +149,15 @@ namespace Trem
       auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
       if(action == GLFW_PRESS)
       {        
-        data->msgCallback_(CreateUnique<KeyPressedEvent>(key));
+        ServiceLocator::dispatcher().enqueue<KeyPressedEvent>(key);
       }
       else if(action == GLFW_REPEAT)
       {
-        data->msgCallback_(CreateUnique<KeyRepeatedEvent>(key));
+        ServiceLocator::dispatcher().enqueue<KeyRepeatedEvent>(key);
       }
       else if(action == GLFW_RELEASE)
       {
-        data->msgCallback_(CreateUnique<KeyReleasedEvent>(key));
+        ServiceLocator::dispatcher().enqueue<KeyReleasedEvent>(key);
       }   
     });
 
@@ -177,12 +167,11 @@ namespace Trem
       auto data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
       if(button == Mouse::ButtonLeft)
       {
-        data->msgCallback_(CreateUnique<LMouseButtonPressedEvent>(Mouse::ButtonLeft));
+        ServiceLocator::dispatcher().enqueue<LMouseButtonPressedEvent>(Mouse::ButtonLeft);
       }   
       else if(button == Mouse::ButtonRight)
       {
         LMouseButtonPressedEvent ev{Mouse::ButtonRight};
-        //data->msgCallback_(ev);
       }   
     });
 
@@ -197,22 +186,18 @@ namespace Trem
       if(data->width_ == 0 && data->height_ == 0)
       {
         //window minimized
-        WindowMinimizedEvent ev{};
-        //data->msgCallback_(ev);     
+        ServiceLocator::dispatcher().enqueue<WindowMinimizedEvent>();
       }
       else
       {
         //window resized
-        WindowResizedEvent ev{data->width_, data->height_};
-        //data->msgCallback_(ev);
+        ServiceLocator::dispatcher().enqueue<WindowResizedEvent>(data->width_, data->height_);
       }
     });
 
     glfwSetWindowCloseCallback(window_,[](GLFWwindow* window)
     {
-      auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-      WindowClosedEvent ev{};
-      //data->msgCallback_(ev);     
+      ServiceLocator::dispatcher().enqueue<WindowClosedEvent>();
     });
 
     //Error callback

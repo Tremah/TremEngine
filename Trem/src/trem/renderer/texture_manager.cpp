@@ -3,7 +3,7 @@
 
 namespace Trem
 {
-  void TextureManager::loadFromAssetList(const bool bind)
+  void TextureManager::loadFromAssetList()
   {
     const std::string fileContent = Util::readFile(assetList_);
     using json = nlohmann::json;
@@ -14,16 +14,13 @@ namespace Trem
     for (auto texture : textureList)
     {
       std::string name = texture.at("name");
-      add(name, CreateShared<Texture>(texture.at("filepath")));
-      if (bind)
-      {
-        bindTexture(name);
-      }
+      add(name, CreateShared<Texture>(name, texture.at("filepath")));
     }
 
     //make sure white color texture is always in texture unit 0
     bindTexture("default");
   }
+
   void TextureManager::add(const std::string& name, ShaPtr<Texture>&& texture)
   {
     TR_ASSERT(!exists(name), "Texture " + name + " already defined!")
@@ -115,7 +112,7 @@ namespace Trem
 
   bool TextureManager::bound(const std::string& name) const
   {
-    return std::any_of(textureUnits_.begin(), textureUnits_.end(), [&name](const ShaPtr<Texture> texture)
+    return std::any_of(textureUnits_.begin(), textureUnits_.end(), [&name](const ShaPtr<Texture>& texture)
     {
       if(texture != nullptr)
       {

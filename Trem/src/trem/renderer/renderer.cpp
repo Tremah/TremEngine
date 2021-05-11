@@ -24,17 +24,19 @@ namespace Trem
     shaderLibrary_.loadFromAssetList();
 
     //load textures
-    textureManager_.loadFromAssetList(false);
+    textureManager_.loadFromAssetList();
 
     //upload texture unit indices to sampler2d array in the shader
     setActiveShader("Texture");
     const int32_t maxTextureUnits = static_cast<int32_t>(TextureManager::maxTextureUnits());
+
     std::vector<int32_t> samplers;
     samplers.reserve(maxTextureUnits);
     for(int32_t i=0; i < maxTextureUnits; i++)
     {
       samplers.push_back(i);
     }
+
     activeShader_->uploadUniformIntArray("uTextures", samplers.data(), maxTextureUnits);
         
     //createBuffers vao, vbo, ebo
@@ -149,13 +151,14 @@ namespace Trem
   }
 
   void Renderer::drawQuad(Quad& quad)
-  {
-    //add quad vertices to intermediate storage 
+  {    
     int32_t texUnit = 0;
     if(quad.texture_ != nullptr)
     {
       texUnit = textureManager_.bindTexture(quad.texture_->name());
     }
+
+    //add quad vertices to intermediate storage 
     loadVerticesToVertexBuffer(quad.vertices_, quad.transform_, static_cast<float>(texUnit));
 
     const uint32_t vertexCount = static_cast<uint32_t>(vertexBufferIndex_ - vertexBufferBase_);
@@ -200,9 +203,7 @@ namespace Trem
   {
     flushBatch();
   }
-
-
-
+  
   //---------------------------------------------------------
   //--- Object data, definition of geometrical primitives ---
   //---------------------------------------------------------

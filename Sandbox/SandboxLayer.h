@@ -9,7 +9,6 @@
 
 //game engine includes
 #include <trem.h>
-#include <trem/core/service_locator.h>
 
 /**
  *  \brief Brief Description

@@ -11,12 +11,12 @@
 #include <trem/core/window.h>
 #include <trem/renderer/renderer.h>
 #include <trem/renderer/camera.h>
-#include <trem/message/message.h>
-#include <trem/message/key_events.h>
-#include <trem/message/mouse_events.h>
-#include <trem/message/message_handler.h>
+#include <trem/event/key_events.h>
+#include <trem/event/mouse_events.h>
 #include <trem/util/timer.h>
 #include <trem/core/service_locator.h>
+#include <trem/signal/signal.hpp>
+#include <trem/signal/dispatcher.hpp>
 
 /**
  *  \brief Foundation class for a game.<br>
@@ -63,22 +63,16 @@ namespace Trem
       void shutdown();
 
       /**
-       * \brief Global message handler.
-       * @param msg Message to be handled.
-       */
-      void handleMessage(UnqPtr<Message>&& msg);
-
-      /**
-       * \brief Global message handler.
-       * @param msg Message to be handled.
-       */
-      bool handleGameMessages(const UnqPtr<Message>& msg);
-
-      /**
        * \brief Add a game layer to the layer list.
        * @param layer Layer to be added.
        */
       void addLayer(Layer* layer);
+
+      /**
+       * \brief Return the dispatcher
+       * @param layer Layer to be added.
+       */
+      Dispatcher& dispatcher();
 
     protected:
       //Member variables
@@ -89,22 +83,24 @@ namespace Trem
       //Member variables
 
       std::string name_;
-      bool running_ = false;
-      bool minimized_ = false;
+      bool running_;
+      bool paused_;
       ShaPtr<Window> window_;
       Renderer renderer_;
       Camera   camera_;
-      MessageHandler msgHandler_;
-      //EventHandler eventHandler;
+      Dispatcher dispatcher_;
 
       //singleton fields
       static bool instantiated_;
 
       //temp
       std::vector<Layer*> layerList_;
-      static constexpr glm::uvec2 defaultWindowSize_{1600, 900};
-
+      glm::uvec2 defaultWindowSize_;
       //Member functions
+
+      void handleWindowClosedEvent(WindowClosedEvent& wcEvent);
+      void handleWindowResizedEvent(WindowResizedEvent& wrsEvent);
+      void handleWindowMinimizedEvent(WindowMinimizedEvent& wmEvent);
   };
 
   //to be defined in the client   

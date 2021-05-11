@@ -30,8 +30,9 @@ namespace Trem
       /**
        * \brief Parameterized constructor to construct a Texture from a file path.
        * @param filePath Path to the texture's source file.
+       * @param name     Name of the texture.
       */
-      Texture(const std::string& filePath);
+      Texture(const std::string& name, const std::string& filePath);
       ~Texture();
 
       //Member variables

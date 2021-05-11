@@ -11,10 +11,10 @@
 
 //game engine includes
 #include <trem/input/input_codes.h>
-#include <trem/message/key_events.h>
-#include <trem/message/mouse_events.h>
-#include <trem/message/window_events.h>
-#include <trem/message/game_events.h>
+#include <trem/event/key_events.h>
+#include <trem/event/mouse_events.h>
+#include <trem/event/window_events.h>
+#include <trem/event/game_events.h>
 #include <trem/core/service_locator.h>
 
 /**
@@ -38,9 +38,6 @@ namespace Trem
     uint16_t width_;
     uint16_t height_;
     std::string title_; /**< window title*/
-    //message callback not in class because it cant be called by the 
-    //callback lambda when inside the class
-    MsgQueueCallback msgCallback_{nullptr};
   };
 
   class Window
@@ -66,7 +63,6 @@ namespace Trem
       bool mouseButtonPressed(MouseCode button) const;
 
       //Setter
-      void setMsgCallback(const MsgQueueCallback& callback);
 
       //Getter
       glm::vec2 mousePosition() const;
@@ -77,9 +73,8 @@ namespace Trem
       GLFWwindow* nativeWindow() const;
 
       //Event handlers      
-      bool handleKeyEvent(const UnqPtr<Message>& msg) const;
-      bool handleMouseEvent(const UnqPtr<Message>& msg) const;
-      bool handleWindowEvent(const UnqPtr<Message>& msg) const;
+      bool handleKeyEvent(KeyPressedEvent& kpEvent) const;
+      bool handleMouseEvent(LMouseButtonPressedEvent& lmbpEvent) const;
 
     protected:
       //Member variables
@@ -90,7 +85,6 @@ namespace Trem
       //Member variables
       GLFWwindow* window_ = nullptr;
       static uint8_t windowCount_;
-
       WindowData windowData_{};
 
       //Member functions

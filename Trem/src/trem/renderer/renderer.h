@@ -186,7 +186,6 @@ namespace Trem
 
     protected:
       //Member variables
-
       //Member functions
 
     private:
@@ -211,6 +210,7 @@ namespace Trem
 
       //Member functions
       //batch rendering
+
       /**
        * \brief Finishes as a batch and issues a draw call to draw the scene.
        */
@@ -221,6 +221,12 @@ namespace Trem
        */
       void setIndices();
 
+      /**
+       * \brief Loads a set of vertices to the intermediate vertex buffer.
+       * @param vertices Array of quad vertices.
+       * @param transform Transform which is to be applied to the vertices.
+       * @param textureUnit Texture unit of the texture which is to be used for the quad.
+       */
       void loadVerticesToVertexBuffer(const std::array<QuadVertex, 4>& vertices, const glm::mat4& transform, float textureUnit);
   };
 

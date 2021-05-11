@@ -1,22 +1,26 @@
-﻿#include "trpch.h"
+﻿#include <trpch.h>
 #include "camera.h"
 
 namespace Trem
 {
-  Camera::Camera(float left, float right, float bottom, float top)
+
+  void Camera::init(float left, float right, float bottom, float top)
   {
     //createBuffers the cameras transform (view matrix) and the projection matrix for the entire scene
     //and combine them into the view-projection matrix     
-    viewMatrix_           = glm::translate(glm::mat4{1.f}, position_) * glm::rotate(glm::mat4{1.f}, rotationAngle_, {0.f, 0.f, 1.f});
-    projectionMatrix_     = glm::ortho(left, right, bottom, top, 1.f, -1.f);
+    viewMatrix_ = glm::translate(glm::mat4{1.f}, position_) * glm::rotate(glm::mat4{1.f}, rotationAngle_, {0.f, 0.f, 1.f});
+    projectionMatrix_ = glm::ortho(left, right, bottom, top, 1.f, -1.f);
     viewProjectionMatrix_ = projectionMatrix_ * glm::inverse(viewMatrix_);
+
+    ServiceLocator::dispatcher().connect<WindowResizedEvent, &Camera::handleWindowResizedEvent>(*this);
+    ServiceLocator::dispatcher().connect<KeyPressedEvent, &Camera::move>(*this);
   }
 
-  bool Camera::move(KeyEvent* ev)
+  bool Camera::move(KeyPressedEvent& ev)
   {
     glm::vec3 distance{0.f};
     bool moved = false;
-    switch (ev->keycode())
+    switch (ev.keycode())
     {
       case Key::W:
         distance.y =  movementSpeed_;
@@ -60,11 +64,6 @@ namespace Trem
     calculateViewProjectionMatrix();
   }
 
-  void Camera::setMsgCallback(const MsgQueueCallback& callback)
-  {
-    msgCallback_ = callback;
-  }
-
   void Camera::setPosition(const glm::vec3& position)
   {
     position_ = position;
@@ -91,6 +90,13 @@ namespace Trem
     viewProjectionMatrix_ = projectionMatrix_ * glm::inverse(viewMatrix_);
   }
 
+  void Camera::handleWindowResizedEvent(WindowResizedEvent& wREvent)
+  {
+    float newWidth = static_cast<float>(wREvent.windowSize_.x);
+    float newHeight = static_cast<float>(wREvent.windowSize_.y);
+    calculateProjectionMatrix(0, newWidth, 0, newHeight);
+  }
+
   //getters
   glm::vec3 Camera::position() const
   {
@@ -110,24 +116,5 @@ namespace Trem
   glm::mat4 Camera::viewProjectionMatrix() const
   {
     return viewProjectionMatrix_;
-  }
-
-  bool Camera::handleMessage(const UnqPtr<Message>& msg)
-  {
-    if(msg->inCategory(MsgCategories::KeyboardEvent))
-    {
-      KeyEvent* keyEvent = static_cast<KeyEvent*>(msg.get());
-      return move(keyEvent);
-    }
-
-    if(msg->type() == MsgTypes::WindowResized)
-    {
-      WindowResizedEvent* windowResizedEvent = static_cast<WindowResizedEvent*>(msg.get());
-      float right = static_cast<float>(windowResizedEvent->windowSize_.x);
-      float top = static_cast<float>(windowResizedEvent->windowSize_.y);
-      calculateProjectionMatrix(0.f, right, 0.f, top);
-      return true;
-    }
-    return false;
   }
 }

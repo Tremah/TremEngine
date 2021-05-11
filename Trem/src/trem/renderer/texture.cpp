@@ -3,7 +3,7 @@
 
 namespace Trem
 {
-  Texture::Texture(const std::string& filePath) : textureId_{0}, width_{0}, height_{0}, bPP_{0}, textureBuffer_{nullptr}
+  Texture::Texture(const std::string& name, const std::string& filePath) : textureId_{0}, name_{name}, width_{0}, height_{0}, bPP_{0}, textureBuffer_{nullptr}
   {
     stbi_set_flip_vertically_on_load(1);
     //load texture
@@ -17,8 +17,6 @@ namespace Trem
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureBuffer_);
-
-    name_ = Util::fileNameFromFilePath(filePath);
 
     if(textureBuffer_)
     {

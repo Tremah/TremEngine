@@ -6,6 +6,7 @@
 
 //game engine includes
 #include <trem/util/logger.h>
+#include <trem/signal/dispatcher.hpp>
 
 /**
  *  \brief Global access point for game wide functionality.<br>
@@ -17,15 +18,18 @@ namespace Trem
   {
     public:      
       //Constructors and deconstructors 
+      ServiceLocator();
       
       //Member variables
 
       //Member functions      
       //Setter
       static void setLogger(Logger&& logger);
+      static void setDispatcher(Dispatcher&& logger);
 
       //Getter
       static spdlog::logger& logger();
+      static Dispatcher& dispatcher();
 
 
     protected:
@@ -36,8 +40,12 @@ namespace Trem
     private:
       //Private constructor
 
+      //Member variables
+      inline static bool instantiated_ = false;
+
       //Services
-      static Logger logger_;
+      inline static Logger logger_;
+      inline static Dispatcher dispatcher_;
       
       //Member functions
 

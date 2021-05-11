@@ -23,3 +23,8 @@ TremEngine Changelog
   - Changed ui/ to input/
   - Changed event/ to message/
   - removed data/ and distributed it's contents back to their related classes
+  
+0.0.3 (11.05.2021):
+  - Added documentation to multiple classes
+  - Removed message system and replaced it with signal/slot system
+  - Added signal dispatcher to ServiceLocator
